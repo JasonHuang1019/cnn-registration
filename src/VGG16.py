@@ -2,11 +2,13 @@ import inspect
 import os
 
 import numpy as np
-import tensorflow as tf
+# import tensorflow as tf
 from utils.utils import gaussian_kernel
 
 VGG_MEAN = [103.939, 116.779, 123.68]
 
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 class VGG16mo:
     def __init__(self, vgg16_npy_path=None):
@@ -17,7 +19,7 @@ class VGG16mo:
             vgg16_npy_path = path
             #print(path)
 
-        self.data_dict = np.load(vgg16_npy_path, encoding='latin1').item()
+        self.data_dict = np.load(vgg16_npy_path, encoding='latin1',allow_pickle=True).item()
         #print("npy file loaded")
 
     def build(self, bgr):
