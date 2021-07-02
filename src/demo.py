@@ -5,8 +5,12 @@ from utils.utils import *
 import cv2
 
 # designate image path here
-IX_path = '../img/1a.jpg'
-IY_path = '../img/1b.jpg'
+# IX_path = '../img/198516.jpg'
+# IY_path = '../img/198517.jpg'
+
+IX_path = '../img/a1.jpg'
+IY_path = '../img/a2.jpg'
+
 
 IX = cv2.imread(IX_path)
 IY = cv2.imread(IY_path)
@@ -19,6 +23,7 @@ X, Y, Z = reg.register(IX, IY)
 registered = tps_warp(Y, Z, IY, IX.shape)
 cb = checkboard(IX, registered, 11)
 
+plt.figure(0)
 plt.subplot(131)
 plt.title('reference')
 plt.imshow(cv2.cvtColor(IX, cv2.COLOR_BGR2RGB))
@@ -28,7 +33,6 @@ plt.imshow(cv2.cvtColor(registered, cv2.COLOR_BGR2RGB))
 plt.subplot(133)
 plt.title('checkboard')
 plt.imshow(cv2.cvtColor(cb, cv2.COLOR_BGR2RGB))
-
 plt.show()
 
 

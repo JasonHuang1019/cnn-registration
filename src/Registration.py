@@ -108,13 +108,19 @@ class CNN(object):
         PD = PD[np.repeat(np.reshape(C[:, 1], [cnt, 1]), cnt, axis=1),
                 np.repeat(np.reshape(C[:, 0], [1, cnt]), cnt, axis=0)]
 
+        print(f"PD = {PD}")
+
+        
         N = X.shape[0]
         M = X.shape[0]
         assert M == N
 
         # precalculation of feature match
         C_all, quality = match(PD)
-
+        # print(f"C_all = {C_all}")
+        # print(f"quality = {quality}")
+        
+        
         # compute \hat{\theta} and \delta
         tau_min = np.min(quality)
         tau_max = np.max(quality)
