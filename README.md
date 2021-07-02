@@ -1,4 +1,4 @@
-# cnn-registration
+# cnn-registration(py3)
 A image registration method using convolutional neural network features written in Python2, Tensorflow API r1.5.0.
 
 ![process](https://github.com/yzhq97/cnn-registration/raw/publish/img/process_comp.jpg)
