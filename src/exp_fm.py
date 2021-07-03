@@ -1,49 +1,59 @@
 from __future__ import print_function
-import time
-import numpy as np
 import Registration
+import matplotlib.pyplot as plt
 from utils.utils import *
 import cv2
-import matplotlib.pyplot as plt
-import scipy.io as sio
 
-datadir = '/Users/yzhq/Code/data/ottawa/'
-matoutdir = datadir + 'matout/'
-name1 = '1a'
-name2 = '1b'
-ext = '.jpg'
-IX_path = datadir + name1 + ext
-IY_path = datadir + name2 + ext
+# designate image path here
+# IX_path = '../img/198516.jpg'
+# IY_path = '../img/198517.jpg'
+
+IX_path = '../img/a1.jpg'
+IY_path = '../img/a2.jpg'
+
 
 IX = cv2.imread(IX_path)
-# IX = cv2.resize(IX, (600, 800))
 IY = cv2.imread(IY_path)
-# IY = cv2.resize(IY, (600, 800))
-shape = IX.shape[:2]
-shape_arr = np.array(shape)
-center = shape_arr / 2.0
-window_width = shape[1]
-window_height = shape[0]
 
-print('initializing')
-reg = Registration.CNN7()
-reg.init_thres = 1.15
-
-print('registering')
-X, Y, T = reg.register(IX, IY)
-
-print('generating warped image')
-registered = tps_warp(Y, T, IY, IX.shape)
-print('generating checkboard image')
+#initialize
+reg = Registration.CNN()
+#register
+X, Y, Z = reg.register(IX, IY)
+#generate regsitered image using TPS
+registered = tps_warp(Y, Z, IY, IX.shape)
 cb = checkboard(IX, registered, 11)
 
-plt.imshow(cv2.cvtColor(cb, cv2.COLOR_RGB2BGR))
+plt.figure(0)
+plt.subplot(131)
+plt.title('reference')
+plt.imshow(cv2.cvtColor(IX, cv2.COLOR_BGR2RGB))
+plt.subplot(132)
+plt.title('registered')
+plt.imshow(cv2.cvtColor(registered, cv2.COLOR_BGR2RGB))
+plt.subplot(133)
+plt.title('checkboard')
+plt.imshow(cv2.cvtColor(cb, cv2.COLOR_BGR2RGB))
 plt.show()
 
-PD = pairwise_distance(X, T)
-C, _ = match(PD)
-X, Y, T = X[C[:, 0]], Y[C[:, 1]], T[C[:, 1]]
 
-outfile = name1 + '_' + name2 + '.mat'
-sio.savemat(matoutdir+outfile, {'X':X, 'Y':Y, 'T':T})
-print('saved to ' + outfile)
+#%%
+
+res = np.zeros(shape=(IX.shape[0], IX.shape[1] * 2, 3), dtype=np.uint8)
+res[:, :IX.shape[1], :] = IX
+res[:, IX.shape[1]:, :] = registered
+print("The number of matching points: %d" % len(X))
+for i, pnt in enumerate(X):
+    src_x = int(pnt[1])
+    src_y = int(pnt[0])
+    dst_x = int(Z[i][1] + IX.shape[1])
+    dst_y = int(Z[i][0])
+
+    cv2.line(res, (src_x, src_y), (dst_x, dst_y), (255, 0, 0), 1)
+    cv2.circle(res, (src_x, src_y), 2, (0, 255, 0), -1)
+    cv2.circle(res, (dst_x, dst_y), 2, (0, 255, 0), -1)
+
+cv2.imwrite('../img/res.jpg', res)
+plt.figure()
+plt.imshow(res)
+
+    
