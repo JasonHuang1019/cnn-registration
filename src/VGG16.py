@@ -2,22 +2,24 @@ import inspect
 import os
 
 import numpy as np
-import tensorflow as tf
+# import tensorflow as tf
 from utils.utils import gaussian_kernel
 
 VGG_MEAN = [103.939, 116.779, 123.68]
 
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 class VGG16mo:
     def __init__(self, vgg16_npy_path=None):
         if vgg16_npy_path is None:
             path = inspect.getfile(VGG16mo)
             path = os.path.abspath(os.path.join(path, os.pardir))
-            path = os.path.join(path, "vgg16.npy")
+            path = os.path.join(path, "vgg16partial.npy")
             vgg16_npy_path = path
             #print(path)
 
-        self.data_dict = np.load(vgg16_npy_path, encoding='latin1').item()
+        self.data_dict = np.load(vgg16_npy_path, encoding='latin1',allow_pickle=True).item()
         #print("npy file loaded")
 
     def build(self, bgr):
@@ -53,9 +55,6 @@ class VGG16mo:
         self.pool4 = self.max_pool(self.conv4_3, 'pool4')
 
         self.conv5_1 = self.conv_layer(self.pool4, "conv5_1")
-        self.conv5_2 = self.conv_layer(self.conv5_1, "conv5_2")
-        self.conv5_3 = self.conv_layer(self.conv5_2, "conv5_3")
-        self.pool5 = self.max_pool(self.conv5_3, 'pool5')
         self.pool5_1 = self.max_pool(self.conv5_1, 'pool5')
 
         self.data_dict = None
@@ -76,18 +75,6 @@ class VGG16mo:
             bias = tf.nn.bias_add(conv, conv_biases)
 
             relu = tf.nn.relu(bias)
-            return relu
-
-    def kconv_layer(self, bottom, name):
-        with tf.variable_scope(name):
-            b, h, w, c = bottom.shape
-            s = int(h/14)
-            kern2d = gaussian_kernel(s)
-            filt = np.zeros([s, s, c, c])
-            for i in range(c): filt[:, :, i, i] = kern2d
-            filt = tf.constant(filt, name="filter", dtype='float32')
-            conv = tf.nn.conv2d(bottom, filt, [1, s, s, 1], padding='SAME')
-            relu = tf.nn.relu(conv)
             return relu
 
     def get_conv_filter(self, name):
